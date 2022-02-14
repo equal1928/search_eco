@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/html">
+    <head>
+        <style>
+            center {
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .request_text {
+                margin-top: 20px;
+            }
+
+            .type_info {
+                margin-top: 20px;
+            }
+
+            .response_info {
+                margin-top: 20px;
+            }
+
+            .request_input {
+                width: 300px;
+                height: 100px;
+            }
+        </style>
+        <title>Краулер</title>
+    </head>
+    <body>
+        <div class="container">
+            <br class="center"><br>Укажите временной период для поиска</br></p>
+
+            <form method="post" class="form center">
+				{% csrf_token %}
+                <p>Начало периода</p>
+                <textarea name="start_date" placeholder="дд-мм-гггг"></textarea>
+                <p>Конец периода</p>
+                <textarea name="end_date" placeholder="дд-мм-гггг"></textarea>
+				<input type="checkbox" name="znak" id="choose">
+                <label for="choose">Знак</label>
+				<input type="checkbox" name="regnum" id="choose">
+                <label for="choose">Регнум</label>
+				<input type="checkbox" name="interfax" id="choose">
+                <label for="choose">Интерфакс</label>
+                <input type="submit" name="create_table" value="Создать таблицу">
+            </form>
+			<form method="post" class="form center">
+				{% csrf_token %}
+				<div class="type_info center">
+					{% if table %}
+					<table border="1">
+						<caption>Инциденты за выбранный период</caption>
+						<tr>
+							<th>Инцидент</th>
+							<th>Статьи</th>
+							<th>Даты выхода</th>
+						</tr>
+						{% for incident_index, incident_length, incident, first_index, first_url, first_header, first_date in table %}
+							<tr>
+								<th rowspan="{{ incident_length }}" scope="rowgroup">Инцидент {{ incident_index }}</th>
+								<td><a href="{{ first_url }}">{{ first_header }}</a></td>
+								<td>{{ first_date }}</td>
+								<td>
+									<select name="{{ first_index }}">
+										{% for index in incident_indexes %}
+											{% if index == incident_index %}
+												<option selected id="{{ index }}" >Инцидент {{ index }}</option>
+											{% else %}
+												<option  id="{{ index }}" >Инцидент {{ index }}</option>
+											{% endif %}
+										{% endfor %}
+										<option id="-1">Не релевантная статья</option>
+									</select>
+								</td>
+							</tr>
+							{% for article_index, url, header, date in incident %}
+							<tr>
+								<td><a href="{{ url }}">{{ header }}</a></td>
+								<td>{{ date }}</td>
+								<td>
+									<select name="{{ article_index }}">
+										{% for index in incident_indexes %}
+											{% if index == incident_index %}
+												<option selected id="{{ index }}" >Инцидент {{ index }}</option>
+											{% else %}
+												<option  id="{{ index }}" >Инцидент {{ index }}</option>
+											{% endif %}
+										{% endfor %}
+										<option id="-1">Не релевантная статья</option>
+									</select>
+								</td>
+							</tr>
+							{% endfor %}
+						{% endfor %}
+					</table>
+					{% endif %}
+				</div>
+				<p>{{ verdict }}</p>
+				<p>
+				<input type="submit" name="accept_result" value="Подтвердить результат">
+			</form>
+			<form method="post" class="form center">
+				{% csrf_token %}
+                <input type="submit" name="create_incident" value="Добавить инцидент">
+            </form>
+			<a href="./download" download>Скачать отчёт</a>
+			</p>
+        </div>
+    </body>
+</html>
