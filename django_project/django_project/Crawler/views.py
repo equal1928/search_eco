@@ -334,7 +334,7 @@ def check_date(start, end):
 
 
 def parse_date(date):
-    return datetime.datetime.strptime(date, '%d-%m-%Y')
+    return datetime.date.fromisoformat(date)
 
 
 def check_date(start, end):

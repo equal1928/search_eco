@@ -7,17 +7,27 @@
     <title>Краулер</title>
 </head>
 <body>
+<header>
+    <div class="container">
+        <img src="https://wwf.ru/assets/img/logo.jpg">
+        <img src="https://cdn.datamasters.ru/libs/datamasters-lk-v2/img/logo.svg">
+        <h1>Название проекта</h1>
+    </div>
+</header>
 <div class="container">
     <p>Укажите временной период для поиска</p>
 
     <form method="post" class="form center">
         {% csrf_token %}
-        <label>Начало периода <input type="date" name="start_date"></label>
-        <label>Конец периода <input type="date" name="end_date"></label>
-        <br/>
-        {% for source in sources %}
-            <label><input type="checkbox" name="{{ source.name }}">{{ source.label }}</label>
-        {% endfor %}
+        <p><label>Начало периода <input type="date" name="start_date"></label></p>
+        <p><label>Конец периода <input type="date" name="end_date"></label></p>
+
+        <p>Выберите источники</p>
+        <div class="scrollable">
+            {% for source in sources %}
+                <div><label><input type="checkbox" name="{{ source.name }}">{{ source.label }}</label></div>
+            {% endfor %}
+        </div>
         <input type="submit" name="create_table" value="Создать таблицу">
     </form>
     <form method="post" class="form center">
@@ -79,7 +89,7 @@
         {% csrf_token %}
         <input type="submit" name="create_incident" value="Добавить инцидент">
     </form>
-    <a href="./download" download>Скачать отчёт</a>
+    <a href="./download" class="download" download>Скачать отчёт</a>
 </div>
 </body>
 </html>
