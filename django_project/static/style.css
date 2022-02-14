@@ -1,0 +1,21 @@
+center {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.request_text {
+    margin-top: 20px;
+}
+
+.type_info {
+    margin-top: 20px;
+}
+
+.response_info {
+    margin-top: 20px;
+}
+
+.request_input {
+    width: 300px;
+    height: 100px;
+}
