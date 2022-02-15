@@ -1,110 +1,95 @@
+{% load static %}
+
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/html">
-    <head>
-        <style>
-            center {
-                margin-left: auto;
-                margin-right: auto;
-            }
+<html lang="ru">
+<head>
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <title>Краулер</title>
+</head>
+<body>
+<header>
+    <div class="container">
+        <img src="https://wwf.ru/assets/img/logo.jpg">
+        <img src="https://cdn.datamasters.ru/libs/datamasters-lk-v2/img/logo.svg">
+        <h1>Название проекта</h1>
+    </div>
+</header>
+<div class="container">
+    <p>Укажите временной период для поиска</p>
 
-            .request_text {
-                margin-top: 20px;
-            }
+    <form method="post" class="form center">
+        {% csrf_token %}
+        <p><label>Начало периода <input type="date" name="start_date"></label></p>
+        <p><label>Конец периода <input type="date" name="end_date"></label></p>
 
-            .type_info {
-                margin-top: 20px;
-            }
-
-            .response_info {
-                margin-top: 20px;
-            }
-
-            .request_input {
-                width: 300px;
-                height: 100px;
-            }
-        </style>
-        <title>Краулер</title>
-    </head>
-    <body>
-        <div class="container">
-            <br class="center"><br>Укажите временной период для поиска</br></p>
-
-            <form method="post" class="form center">
-				{% csrf_token %}
-                <p>Начало периода</p>
-                <textarea name="start_date" placeholder="дд-мм-гггг"></textarea>
-                <p>Конец периода</p>
-                <textarea name="end_date" placeholder="дд-мм-гггг"></textarea>
-				<input type="checkbox" name="znak" id="choose">
-                <label for="choose">Знак</label>
-				<input type="checkbox" name="regnum" id="choose">
-                <label for="choose">Регнум</label>
-				<input type="checkbox" name="interfax" id="choose">
-                <label for="choose">Интерфакс</label>
-                <input type="submit" name="create_table" value="Создать таблицу">
-            </form>
-			<form method="post" class="form center">
-				{% csrf_token %}
-				<div class="type_info center">
-					{% if table %}
-					<table border="1">
-						<caption>Инциденты за выбранный период</caption>
-						<tr>
-							<th>Инцидент</th>
-							<th>Статьи</th>
-							<th>Даты выхода</th>
-						</tr>
-						{% for incident_index, incident_length, incident, first_index, first_url, first_header, first_date in table %}
-							<tr>
-								<th rowspan="{{ incident_length }}" scope="rowgroup">Инцидент {{ incident_index }}</th>
-								<td><a href="{{ first_url }}">{{ first_header }}</a></td>
-								<td>{{ first_date }}</td>
-								<td>
-									<select name="{{ first_index }}">
-										{% for index in incident_indexes %}
-											{% if index == incident_index %}
-												<option selected id="{{ index }}" >Инцидент {{ index }}</option>
-											{% else %}
-												<option  id="{{ index }}" >Инцидент {{ index }}</option>
-											{% endif %}
-										{% endfor %}
-										<option id="-1">Не релевантная статья</option>
-									</select>
-								</td>
-							</tr>
-							{% for article_index, url, header, date in incident %}
-							<tr>
-								<td><a href="{{ url }}">{{ header }}</a></td>
-								<td>{{ date }}</td>
-								<td>
-									<select name="{{ article_index }}">
-										{% for index in incident_indexes %}
-											{% if index == incident_index %}
-												<option selected id="{{ index }}" >Инцидент {{ index }}</option>
-											{% else %}
-												<option  id="{{ index }}" >Инцидент {{ index }}</option>
-											{% endif %}
-										{% endfor %}
-										<option id="-1">Не релевантная статья</option>
-									</select>
-								</td>
-							</tr>
-							{% endfor %}
-						{% endfor %}
-					</table>
-					{% endif %}
-				</div>
-				<p>{{ verdict }}</p>
-				<p>
-				<input type="submit" name="accept_result" value="Подтвердить результат">
-			</form>
-			<form method="post" class="form center">
-				{% csrf_token %}
-                <input type="submit" name="create_incident" value="Добавить инцидент">
-            </form>
-			<a href="./download" download>Скачать отчёт</a>
-			</p>
+        <p>Выберите источники</p>
+        <div class="scrollable">
+            {% for source in sources %}
+                <div><label><input type="checkbox" name="{{ source.name }}">{{ source.label }}</label></div>
+            {% endfor %}
         </div>
-    </body>
+        <input type="submit" name="create_table" value="Создать таблицу">
+    </form>
+    <form method="post" class="form center">
+        {% csrf_token %}
+        <div class="type_info center">
+            {% if table %}
+                <table>
+                    <caption>Инциденты за выбранный период</caption>
+                    <tr>
+                        <th>Инцидент</th>
+                        <th>Статьи</th>
+                        <th>Даты выхода</th>
+                    </tr>
+                    {% for incident_index, incident_length, incident, first_index, first_url, first_header, first_date in table %}
+                        <tr>
+                            <th rowspan="{{ incident_length }}" scope="rowgroup">Инцидент {{ incident_index }}</th>
+                            <td><a href="{{ first_url }}">{{ first_header }}</a></td>
+                            <td>{{ first_date }}</td>
+                            <td>
+                                <select name="{{ first_index }}">
+                                    {% for index in incident_indexes %}
+                                        {% if index == incident_index %}
+                                            <option selected id="{{ index }}">Инцидент {{ index }}</option>
+                                        {% else %}
+                                            <option id="{{ index }}">Инцидент {{ index }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                    <option id="-1">Не релевантная статья</option>
+                                </select>
+                            </td>
+                        </tr>
+                        {% for article_index, url, header, date in incident %}
+                            <tr>
+                                <td><a href="{{ url }}">{{ header }}</a></td>
+                                <td>{{ date }}</td>
+                                <td>
+                                    <select name="{{ article_index }}">
+                                        {% for index in incident_indexes %}
+                                            {% if index == incident_index %}
+                                                <option selected id="{{ index }}">Инцидент {{ index }}</option>
+                                            {% else %}
+                                                <option id="{{ index }}">Инцидент {{ index }}</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                        <option id="-1">Не релевантная статья</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% endfor %}
+                </table>
+            {% endif %}
+        </div>
+        <p>{{ verdict }}</p>
+        <div>
+            <input type="submit" name="accept_result" value="Подтвердить результат">
+    </form>
+    <form method="post" class="form center">
+        {% csrf_token %}
+        <input type="submit" name="create_incident" value="Добавить инцидент">
+    </form>
+    <a href="./download" class="download" download>Скачать отчёт</a>
+</div>
+</body>
 </html>

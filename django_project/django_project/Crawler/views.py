@@ -16,20 +16,20 @@ from pymorphy2 import MorphAnalyzer
 from sklearn.feature_extraction.text import TfidfVectorizer
 import spacy
 import tensorflow_hub as hub
-import tensorflow as tf
+# import tensorflow as tf
 import nltk
 from nltk.stem.snowball import SnowballStemmer
 from pymorphy2 import MorphAnalyzer
 
-from catboost import CatBoostClassifier
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics.pairwise import cosine_similarity
-from sklearn.linear_model import LogisticRegression, SGDClassifier
-from sklearn.svm import SVC
-from sklearn.naive_bayes import GaussianNB
-from sklearn.preprocessing import StandardScaler
-from sklearn.pipeline import make_pipeline
+# from catboost import CatBoostClassifier
+# from sklearn.tree import DecisionTreeClassifier
+# from sklearn.ensemble import RandomForestClassifier
+# from sklearn.metrics.pairwise import cosine_similarity
+# from sklearn.linear_model import LogisticRegression, SGDClassifier
+# from sklearn.svm import SVC
+# from sklearn.naive_bayes import GaussianNB
+# from sklearn.preprocessing import StandardScaler
+# from sklearn.pipeline import make_pipeline
 
 import pandas as pd
 from . import utils
@@ -69,7 +69,22 @@ article_to_incident = {}
     
 def index(request):
     global catboost, vectorizer, nlp, model, morph, stemmer, clfs, table, static_path
-    context = {}
+    context = {
+        'sources': [
+            {
+                'name': 'znak',
+                'label': 'Знак'
+            },
+            {
+                'name': 'regnum',
+                'label': 'Регнум'
+            },
+            {
+                'name': 'interfax',
+                'label': 'Интерфакс'
+            },
+        ]
+    }
     if request.method == 'POST' and 'create_table' in request.POST:
         if not table:
             table = load_debug_table(static_path)
@@ -319,7 +334,7 @@ def check_date(start, end):
 
 
 def parse_date(date):
-    return datetime.datetime.strptime(date, '%d-%m-%Y')
+    return datetime.date.fromisoformat(date)
 
 
 def check_date(start, end):

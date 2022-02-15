@@ -1,0 +1,62 @@
+center {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.request_text {
+    margin-top: 20px;
+}
+
+.type_info {
+    margin-top: 20px;
+}
+
+.response_info {
+    margin-top: 20px;
+}
+
+.request_input {
+    width: 300px;
+    height: 100px;
+}
+
+a {
+    text-decoration: none;
+    display: inline-block;
+    padding: 12px 16px 14px 16px;
+    font-family: sans-serif;
+    text-transform: uppercase;
+}
+
+.download {
+    background-color: #e98300;
+    color: #fff;
+}
+
+body {
+    margin: 0;
+}
+
+.container  {
+    margin: 0 auto;
+    width: fit-content;
+    max-width: 100%;
+}
+
+header img {
+    height: 100px;
+}
+
+header .container > *{
+    vertical-align: middle;
+}
+
+.scrollable {
+    overflow: auto;
+    max-height: 100px;
+}
+
+h1 {
+    font-size: 50px;
+    display: inline;
+}
