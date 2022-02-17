@@ -11,7 +11,7 @@
     <div class="container">
         <img src="https://wwf.ru/assets/img/logo.jpg">
         <img src="https://cdn.datamasters.ru/libs/datamasters-lk-v2/img/logo.svg">
-        <h1>Название проекта</h1>
+        <h1>Поиск экологических загрязнений по публикациям СМИ</h1>
     </div>
 </header>
 <div class="container">
@@ -38,16 +38,25 @@
                     <caption>Инциденты за выбранный период</caption>
                     <tr>
                         <th>Инцидент</th>
-                        <th>Статьи</th>
-                        <th>Даты выхода</th>
+                        <th>Удалить инцидент</th>
+                        <th>Статья</th>
+                        <th>Источник</th>
+                        <th>Дата выхода</th>
+                        <th>Отношение к инциденту</th>
                     </tr>
-                    {% for incident_index, incident_length, incident, first_index, first_url, first_header, first_date in table %}
+                    {% for incident_index, incident_length, articles, first_article in table %}
                         <tr>
                             <th rowspan="{{ incident_length }}" scope="rowgroup">Инцидент {{ incident_index }}</th>
-                            <td><a href="{{ first_url }}">{{ first_header }}</a></td>
-                            <td>{{ first_date }}</td>
+                            <th rowspan="{{ incident_length }}" scope="rowgroup">
+                                <input type="checkbox" name="delete {{ incident_index }}">
+                            </th>
+                            <td><a href="{{ first_article.1 }}">{{ first_article.3 }}</a></td>
+                            <td>{{ first_article.2 }}</td>
+                            <td>{{ first_article.4 }}</td>
+
                             <td>
-                                <select name="{{ first_index }}">
+                                <select name="{{ first_article.0 }}">
+                                    <option id="-1">Не релевантная статья</option>
                                     {% for index in incident_indexes %}
                                         {% if index == incident_index %}
                                             <option selected id="{{ index }}">Инцидент {{ index }}</option>
@@ -55,16 +64,17 @@
                                             <option id="{{ index }}">Инцидент {{ index }}</option>
                                         {% endif %}
                                     {% endfor %}
-                                    <option id="-1">Не релевантная статья</option>
                                 </select>
                             </td>
                         </tr>
-                        {% for article_index, url, header, date in incident %}
+                        {% for article_index, url, source, header, date in articles %}
                             <tr>
                                 <td><a href="{{ url }}">{{ header }}</a></td>
+                                <td>{{ source }}</td>
                                 <td>{{ date }}</td>
                                 <td>
                                     <select name="{{ article_index }}">
+                                        <option id="-1">Не релевантная статья</option>
                                         {% for index in incident_indexes %}
                                             {% if index == incident_index %}
                                                 <option selected id="{{ index }}">Инцидент {{ index }}</option>
@@ -72,7 +82,6 @@
                                                 <option id="{{ index }}">Инцидент {{ index }}</option>
                                             {% endif %}
                                         {% endfor %}
-                                        <option id="-1">Не релевантная статья</option>
                                     </select>
                                 </td>
                             </tr>
@@ -89,6 +98,43 @@
         {% csrf_token %}
         <input type="submit" name="create_incident" value="Добавить инцидент">
     </form>
+    {% if second_table %}
+        <form method="post" class="form center">
+            {% csrf_token %}
+            <div class="scrollable"></div>
+            <table>
+                <tr>
+                    <th>Инцидент</th>
+                    <th>Локация</th>
+                    <th>Ответственная организация</th>
+                    <th>Тип инцидента</th>
+                    <th>Статья</th>
+                <tr>
+                {% for incident_index, incident_length, incident_locs, incident_orgs, previous, first_article, articles in second_table %}
+                    <tr>
+                        <th rowspan="{{ incident_length }}" scope="rowgroup">Инцидент {{ incident_index }}</th>
+                        <th rowspan="{{ incident_length }}" scope="rowgroup">
+                            <textarea name="loc {{ incident_index }}" placeholder="Рекомендации: {{ incident_locs }}">{{ previous.0 }}</textarea>
+                        </th>
+                        <th rowspan="{{ incident_length }}" scope="rowgroup">
+                            <textarea name="org {{ incident_index }}" placeholder="Рекомендации: {{ incident_orgs }}">{{ previous.1 }}</textarea>
+                        </th>
+                        <th rowspan="{{ incident_length }}" scope="rowgroup">
+                            <textarea name="type {{ incident_index }}">{{ previous.2 }}</textarea>
+                        </th>
+                        <td><a href="{{ first_article.1 }}">{{ first_article.0 }}</a></td>
+                    </tr>
+                    {% for header, url in articles %}
+                        <tr>
+                            <td><a href="{{ url }}">{{ header }}</a></td>
+                        </tr>
+                    {% endfor %}
+                {% endfor %}
+            </table>
+            <input type="submit" name="accept_second_result" value="Подтвердить результат">
+        </form>
+    {% endif %}
+
     <a href="./download" class="download" download>Скачать отчёт</a>
 </div>
 </body>

@@ -60,3 +60,14 @@ h1 {
     font-size: 50px;
     display: inline;
 }
+
+td {
+border: 1px solid #000;
+border-collapse: collapse;
+}
+
+th {
+border: 1px solid #000;
+border-collapse: collapse;
+}
+
