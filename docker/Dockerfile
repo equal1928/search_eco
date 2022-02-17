@@ -4,9 +4,11 @@ WORKDIR /apps/django_project
 
 COPY ./django_project /apps/django_project
 
-EXPOSE 8080
+COPY ./nltk_data /root/nltk_data
 
-RUN pip install requirements.txt
+EXPOSE 55051
 
-CMD ["python", "/apps/django_project/manage.py", "runserver", "0.0.0.0:8080"]
+RUN pip install -r requirements.txt
+
+CMD ["python", "/apps/django_project/manage.py", "runserver", "0.0.0.0:55051"]
 
