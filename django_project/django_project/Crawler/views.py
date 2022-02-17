@@ -97,7 +97,7 @@ def index(request):
         ]
     }
     if request.method == 'POST' and 'create_table' in request.POST:
-        flag = True
+        flag = False
         if flag:
             table = load_debug_table(static_path)
             context['table'] = [(i, len(table[i]), table[i][1:], table[i][0]) for i in range(len(table))]
@@ -178,7 +178,7 @@ def index(request):
             loc = request.POST.get('loc ' + str(i))
             org = request.POST.get('org ' + str(i))
             type_ = request.POST.get('type ' + str(i))
-            print(loc, org, type_) 
+            #print(loc, org, type_) 
             incident = (second_table[i][0], second_table[i][1], [loc, org, type_], second_table[i][3])
             second_table[i] = incident
             
@@ -189,22 +189,14 @@ def index(request):
         
         context['incident_indexes'] = [i for i in range(len(table))]    
         save_table_(static_path, second_table)    
-            
+        save_table(static_path, table)
+        
     return render(request, 'index.html', context)
-
-def generate_report(static_path, table):
-    parsers = {'www.interfax.ru': get_parsed_interfax_news_report,
-           'www.znak.com': get_parsed_znak_news_report,
-           'regnum.ru': get_parsed_regnum_news_report
-         }
-    df = make_dataframe(table, parsers)
-    print(df)
-    df.to_excel(static_path + 'report.xlsx')
     
     
 def download_file(request):
-    global static_path, table
-    generate_report(static_path, table)
+    global static_path, table, second_table
+    make_dataframe(static_path, table, second_table)
     filename = 'report.xlsx'
     filepath = static_path + filename
     path = open(filepath, 'rb')
@@ -416,38 +408,30 @@ def create_incident(incident, parsers):
            
         
 
-def make_dataframe(incidents, parsers):
-    global nlp, morph
+def make_dataframe(static_path, table_with_papers, table_with_inc_inf):
     k = 0
     names = []
+    locations = []
+    orgs = []
+    types = []
     headers = []
+    sources = []
     links = []
     dates = []
-    orgs = []
-    locations = []
-    for incident in incidents:
+    for i in range(len(table_with_inc_inf)):
         names += [f'Инцидент {k}']
         k += 1
-        current_orgs = set()
-        current_locations = set()
-        for article in incident:
-            num, url, header, date = article
-            headers.append(header)
-            links.append(url)
-            dates.append(date)
-            name = url.split('/')[2]
-            if name in parsers:
-                parse_func = parsers[name]
-                header, text = parse_func(url)
-                #print(url, header, text, name)
-                ents = utils.get_ners_with_types(text, nlp, morph)
-                for ent in ents:
-                    if ent[1] == 'ORG':
-                        current_orgs.add(ent[0])
-                    if ent[1] == 'LOC':
-                        current_locations.add(ent[0])
-        orgs += list(current_orgs)
-        locations += list(current_locations)
+        loc, org, inc_type = table_with_inc_inf[i][2]
+        locations.append(loc)
+        orgs.append(org)
+        types.append(inc_type)
+        
+        for article in table_with_papers[i]:
+            sources.append(article[2])
+            headers.append(article[3])
+            links.append(article[1])
+            dates.append(article[4])
+        
         max_len = max(len(names), len(headers), len(orgs), len(locations))
         if len(names) < max_len:
             for _ in range(max_len - len(names)):
@@ -467,14 +451,30 @@ def make_dataframe(incidents, parsers):
         if len(locations) < max_len:
             for _ in range(max_len - len(locations)):
                 locations.append('')
+        if len(types) < max_len:
+            for _ in range(max_len - len(types)):
+                types.append('')
+        if len(sources) < max_len:
+            for _ in range(max_len - len(sources)):
+                sources.append('')
                 
     final_data = {'Название': names,
+                  'Организация': orgs,
+                  'Локация': locations,
+                  'Тип': types,
                   'Заголовок': headers,
-                  'Ссылка': links,
+                  'Источник': sources,
                   'Дата': dates,
-                  'Организации': orgs,
-                  'Локации': locations}
+                  'Ссылка': links}
     
     df = pd.DataFrame(data=final_data)
     
-    return df
+    writer = pd.ExcelWriter(static_path + 'report.xlsx') 
+    df.to_excel(writer, sheet_name='Sheet1', index=False, na_rep='NaN')
+
+    for column in df:
+        column_width = max(df[column].astype(str).map(len).max(), len(column)) + 1
+        col_idx = df.columns.get_loc(column)
+        writer.sheets['Sheet1'].set_column(col_idx, col_idx, column_width)
+    
+    writer.save()
