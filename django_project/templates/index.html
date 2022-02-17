@@ -30,6 +30,8 @@
         </div>
         <input type="submit" name="create_table" value="Создать таблицу">
     </form>
+</div>
+<div class="container">
     <form method="post" class="form center">
         {% csrf_token %}
         <div class="type_info center">
@@ -84,12 +86,12 @@
         <p>{{ verdict }}</p>
         <div>
             <input type="submit" name="accept_result" value="Подтвердить результат">
+
+            <input type="submit" name="create_incident" value="Добавить инцидент">
+
+            <a href="./download" class="download" download>Скачать отчёт</a>
+        </div>
     </form>
-    <form method="post" class="form center">
-        {% csrf_token %}
-        <input type="submit" name="create_incident" value="Добавить инцидент">
-    </form>
-    <a href="./download" class="download" download>Скачать отчёт</a>
 </div>
 </body>
 </html>
