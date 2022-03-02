@@ -21,6 +21,7 @@ import nltk
 from nltk.stem.snowball import SnowballStemmer
 from pymorphy2 import MorphAnalyzer
 from collections import Counter
+from multiprocessing import Pool
 
 # from catboost import CatBoostClassifier
 # from sklearn.tree import DecisionTreeClassifier
@@ -259,19 +260,34 @@ def get_parsed_znak_news_report(url):
 
 
 def parse(start_date, end_date, threshold, parsers, vectorizer, clfs, stemmer):
-    results = []
+    args = []
     if parsers['regnum']:
-        results += utils.parse_regnum(start_date, end_date, threshold, vectorizer, clfs, stemmer)
-    print(len(results))
+        args.append(('regnum', start_date, end_date, threshold, vectorizer, clfs, stemmer))
     
     if parsers['interfax']:
-        results += utils.parse_interfax(start_date, end_date, threshold, vectorizer, clfs, stemmer)
-    print(len(results))
+        args.append(('interfax', start_date, end_date, threshold, vectorizer, clfs, stemmer))
     
     if parsers['znak']:
-        results += utils.parse_znak(start_date, end_date, threshold, vectorizer, clfs, stemmer)
-    print(len(results))
-    return results
+        args.append(('znak', start_date, end_date, threshold, vectorizer, clfs, stemmer))
+        
+    return parse_all(args)
+
+def parse_all(args):
+    pool = Pool(processes=len(args))
+    results = pool.starmap(get_parser_and_parse, args)
+    results_concat = []
+    for result in results:
+        for elem in result:
+            results_concat.append(elem)
+    return results_concat
+
+def get_parser_and_parse(parser, start_date, end_date, threshold, vectorizer, clfs, stemmer):
+    if parser == 'regnum':
+        return utils.parse_regnum(start_date, end_date, threshold, vectorizer, clfs, stemmer)
+    elif parser == 'interfax':
+        return utils.parse_interfax(start_date, end_date, threshold, vectorizer, clfs, stemmer)
+    else:
+        return utils.parse_znak(start_date, end_date, threshold, vectorizer, clfs, stemmer)
 
 def get_clusters(articles, nlp, model, morph, stemmer, catboost):
     texts = []
@@ -355,15 +371,13 @@ def parse_date(date):
 def check_date(start, end):
     if start == None or end == None:
         return False
-    too_past = datetime.datetime.strptime('01-01-2000', '%d-%m-%Y')
-    too_future = datetime.datetime.today()
     try:
         start_date = parse_date(start)
         end_date = parse_date(end)
     except:
         return False
 
-    if start_date > end_date or start_date < too_past or start_date > too_future or end_date < too_past or end_date > too_future:
+    if start_date > end_date:
         return False
     return True
 

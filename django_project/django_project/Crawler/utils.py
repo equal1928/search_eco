@@ -66,7 +66,7 @@ def get_parsed_interfax_news(url, threshold, vectorizer, clfs, stemmer):
     text = ''.join(text)
     if predict_proba(text, vectorizer, clfs, stemmer) > threshold:
         return header, text
-    return None, None 
+    return None, None
 
 def parse_znak(start_date, end_date, threshold, vectorizer, clfs, stemmer):
     parse_results = []
